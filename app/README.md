@@ -1,126 +1,84 @@
-# SupabaseMemberApp 🌟
+# 📦 프로젝트 구조 및 설명
 
-SupabaseMemberApp·은 Kotlin으로 개발된 Android 앱으로, [Supabase](https://supabase.com)의 REST API가 연결되어 멤버 정보를 가져오고 목록으로 표시합니다.
-
-목록 항목을 클릭하면 모든 정보를 다음과 같은 데이어 드릴리쥬를 통해 표시하며, Supabase 가이드를 관찰하고 가능한 Android 시스템의 구분을 허용합니다.
-
----
-
-## 📄 기능
-
-- Supabase 데이터베이스의 `user` 테이블에서 멤버 목록 가져오기
-- 목록바로 보기 (RecyclerView)
-- 클릭시 모든 정보 (DialogFragment)
-- Kotlin, Coroutine, ViewBinding, Supabase SDK와 같이 구현
-
----
-
-## 📊 Supabase 테이블 설정
-
-경로: `user`
-
-```sql
-create table public.user (
-  id text primary key,
-  name text not null,
-  grade text not null,
-  phone text not null,
-  kakao_use boolean not null,
-  member_card_no text not null,
-  credit_card_name text not null,
-  credit_card_no text not null,
-  promotion text
-);
-```
-
-Row Level Security (RLS) 허용 보호 설정:
-
-```sql
-alter table public.user enable row level security;
-create policy "Allow read access" on public.user for select using (true);
-```
-
----
-
-## 🚀 설치 방법
-
-### ✅ 전제 조건
-
-- Android Studio Hedgehog 이상
-- JDK 17
-- Supabase 프로젝트 생성 + anon key 확당
-
-### 📁 파일 구조
+## 1. 패키지 구조
 
 ```
-SupabaseMemberApp/
- ├─ app/
- ├─ local.properties  ← 필요!
- └─ build.gradle.kts (project-level)
+com.mcandle.member
+├── MainActivity.kt                # 메인 진입 화면, 시나리오 선택(멤버/주문)
+├── MemberListActivity.kt          # 멤버 리스트 조회 및 상세 다이얼로그 호출
+├── MemberAdapter.kt               # 멤버 리스트 RecyclerView 어댑터
+├── MemberInfo.kt                  # 멤버 데이터 모델
+├── MemberInfoDialog.kt            # 멤버 상세 정보 다이얼로그
+├── OrderListActivity.kt           # 주문 리스트 조회 및 상세/결제 추천 다이얼로그 호출
+├── OrderAdapter.kt                # 주문 리스트 RecyclerView 어댑터
+├── OrderInfo.kt                   # 주문 데이터 모델
+├── OrderConfirmDialog.kt          # 주문 결제 추천 확인 다이얼로그
+├── OrderDetailDialog.kt           # 주문 상세/결제 추천 다이얼로그
+├── SupabaseClientProvider.kt      # Supabase API 클라이언트 제공
+└── ui/theme/                      # (테마 관련 파일)
 ```
 
-### 📅 local.properties
+## 2. 주요 소스코드 설명
 
-```properties
-SUPABASE_URL=https://your-project-id.supabase.co
-SUPABASE_API_KEY=your-anon-key
-```
+- **MainActivity.kt**
+  - 앱의 메인 진입점. "멤버" 또는 "주문" 시나리오 버튼을 통해 각 기능 화면으로 이동합니다.
 
-> git 에 커미팅 x (`.gitignore` 포함)
+- **MemberListActivity.kt**
+  - 멤버 목록을 Supabase에서 조회하여 RecyclerView로 표시합니다.
+  - 멤버 클릭 시 `MemberInfoDialog`를 통해 상세 정보를 보여줍니다.
 
-### ⚙️ build.gradle.kts (앱 모듈)
+- **MemberAdapter.kt**
+  - 멤버 리스트를 위한 RecyclerView 어댑터.
+  - 각 멤버 아이템 클릭 시 콜백으로 상세 다이얼로그 호출.
 
-```kotlin
-buildFeatures {
-    viewBinding = true
-}
+- **MemberInfoDialog.kt**
+  - 멤버의 상세 정보를 보여주는 다이얼로그.
+  - 이름, 등급, 전화번호, 카카오 사용 여부, 멤버십/신용카드 정보, 프로모션 등 표시.
 
-buildConfigField("String", "SUPABASE_URL", "\"${localProps.getProperty("SUPABASE_URL")}\"")
-buildConfigField("String", "SUPABASE_API_KEY", "\"${localProps.getProperty("SUPABASE_API_KEY")}\"")
+- **OrderListActivity.kt**
+  - 주문 목록을 Supabase에서 조회하여 RecyclerView로 표시합니다.
+  - 주문 클릭 시 `OrderConfirmDialog` → "확인" 시 `OrderDetailDialog`로 상세/결제 추천 정보 표시.
 
-dependencies {
-    implementation("io.github.jan-tennert.supabase:postgrest-kt:1.2.0")
-    implementation("io.ktor:ktor-client-okhttp:2.3.5")
-    implementation("io.ktor:ktor-client-content-negotiation:2.3.5")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.5")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-}
-```
+- **OrderAdapter.kt**
+  - 주문 리스트를 위한 RecyclerView 어댑터.
+  - 각 주문 아이템 클릭 시 콜백으로 결제 추천 다이얼로그 호출.
 
-### 📆 Build & Run
+- **OrderConfirmDialog.kt**
+  - 주문 결제 추천 안내 및 "확인/취소" 버튼 제공.
+  - "확인" 시 주문 상세 재조회 후 상세 다이얼로그로 이동.
 
-1. `File > Sync with Gradle`
-2. `Build > Clean Project`
-3. `Run > Run app`
+- **OrderDetailDialog.kt**
+  - 주문 상세 정보, 추천 결제 방식, 프로모션, 결제금액 등 표시.
+  - "결제하기" 버튼 제공(추후 결제 로직 구현 가능).
 
----
+- **OrderInfo.kt / MemberInfo.kt**
+  - 각각 주문/멤버의 데이터 모델 클래스.
 
-## 🔹 Kotlin Source Code (주요 방향)
+- **SupabaseClientProvider.kt**
+  - Supabase API 연동을 위한 클라이언트 객체 제공.
 
-```
-├─ MainActivity.kt             → Supabase에서 멤버 목록 가져오고 RecyclerView에 보여주기
-├─ MemberInfo.kt              → Supabase 값을 다룰 data class (@Serializable)
-├─ SupabaseClientProvider.kt → SupabaseClient가 URL + Key 것을 기반으로 생성함
-├─ MemberAdapter.kt           → RecyclerView adapter에서 click event와 binding 처리
-└─ MemberInfoDialog.kt       → 목록을 클릭할 경우 DialogFragment로 정보 표시
-```
+## 3. 주요 레이아웃 파일 설명
 
----
+- **activity_main.xml**
+  - 메인 화면. "멤버"와 "주문" 시나리오 버튼 2개로 구성.
 
-## 🚫 오류 처리
+- **activity_member_list.xml**
+  - 상단 툴바와 멤버 리스트(RecyclerView)로 구성.
 
-- ❌ `UnauthorizedRestException` → local.properties의 KEY 설정 확인
-- ❌ `No HTTP client engine` → ktor-client-okhttp 배포 필요
-- ❌ 목록이 표시되지 않음 → Supabase RLS 확인 + 데이터 존재 확인
+- **activity_order_list.xml**
+  - 상단 툴바와 주문 리스트(RecyclerView)로 구성.
 
----
+- **item_member.xml**
+  - 멤버 리스트의 각 아이템 레이아웃. 이름, 전화번호, 멤버십 번호 표시.
 
-## 🌟 기획안
+- **order_item.xml**
+  - 주문 리스트의 각 아이템 레이아웃. Order Key, User ID 표시.
 
-- auth(Gotrue) 방해 구현 가능
-- 새 멤버 등록/수정/삭제 가능
-- Jetpack Compose 구성로 이시 가능
+- **dialog_member_info.xml**
+  - 멤버 상세 정보 다이얼로그 레이아웃. 이름, 등급, 전화번호, 카드 정보 등 표시.
 
----
+- **dialog_order_confirm.xml**
+  - 주문 결제 추천 안내 다이얼로그. 안내 메시지와 "확인/취소" 버튼.
 
-✨ Supabase + Kotlin과 XML UI 의 가능성을 보여주는 탭스트 개발 플랫폼입니다!
+- **order_detail_dialog.xml**
+  - 주문 상세/결제 추천 다이얼로그. 매장명, POS ID, 직원, 상품, 수량, 금액, 프로모션, 추천 결제, 결제금액, 하단에 "취소/결제하기" 버튼.
