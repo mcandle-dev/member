@@ -13,7 +13,7 @@ class OrderDetailDialog(
     private val onPayClicked: (OrderInfo) -> Unit
 ) : DialogFragment() {
 
-    private var _binding: OrderDetailDialogBinding? = null
+    private var _binding:OrderDetailDialogBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(

@@ -1,5 +1,6 @@
 package com.mcandle.member
 
+
 import org.junit.Test
 
 import org.junit.Assert.*
